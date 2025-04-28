@@ -133,7 +133,7 @@ export default function Form() {
   const progressPercentage = ((currentStep + 1) / totalSteps) * 100;
 
   return (
-    <div className="max-w-2xl mx-auto p-8 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl transition-shadow duration-300 hover:shadow-xl">
+    <div className="max-w-2xl mx-auto p-4 md:p-8 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl transition-shadow duration-300 hover:shadow-xl">
       {/* --- El código de la barra de progreso ya NO va aquí --- */}
 
       {isSubmitted ? (
@@ -150,7 +150,7 @@ export default function Form() {
         <form onSubmit={handleSubmit} className={`space-y-6`} onKeyDown={handleKeyDown}>
           <div className={`transition-opacity duration-300 ${isFading ? 'opacity-0' : 'opacity-100'}`}>
             {currentStep === 0 && (
-              <div className="flex space-x-4 mb-4">
+              <div className="flex flex-col md:flex-row md:space-x-4 mb-4 space-y-4 md:space-y-0">
                 <div className="flex-1">
                   <label htmlFor="firstName" className="block text-sm font-medium text-white mb-4">
                     First Name
@@ -308,7 +308,7 @@ export default function Form() {
               {/* Opcional: Texto de progreso */}
               <div className="flex justify-between mb-1 text-white/80 text-sm">
                 <span>Step {currentStep + 1} of {totalSteps}</span>
-                <span>{Math.round(progressPercentage)}% to a New World</span>
+                <span>{Math.round(progressPercentage)}% to unlock new possibilities</span>
               </div>
               {/* Contenedor de la barra */}
               <div className="w-full bg-white/30 rounded-full h-2 overflow-hidden"> 
