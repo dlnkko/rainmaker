@@ -41,7 +41,16 @@ export default function Form() {
     }
 
     try {
-      const response = await fetch('/api/webhook', {
+      const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
+      if (!webhookUrl) {
+        // Opcional: Manejar el caso donde la URL no esté definida
+        console.error("Webhook URL is not defined in environment variables.");
+        setMessage('Configuration error. Please contact support.');
+        setIsSubmitting(false);
+        return;
+      }
+      // Usar la variable de entorno en el fetch
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
