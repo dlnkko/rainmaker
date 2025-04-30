@@ -30,35 +30,44 @@ export default function Form() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("handleSubmit triggered");
     setIsSubmitting(true);
     setMessage('');
 
-    // Validar campos requeridos, INCLUYENDO software de nuevo
-    if (!firstName || !lastName || !jobRole || !email || !problem || !software) { 
+    const dataToSend = { firstName, lastName, jobRole, email, problem, software };
+    console.log("Data to send:", dataToSend);
+
+    // Validar campos requeridos, EXCLUYENDO software
+    if (!firstName || !lastName || !jobRole || !email || !problem) { 
       setMessage('Please fill in all required fields before submitting.');
       setIsSubmitting(false);
+      console.log("Validation failed");
       return;
     }
 
     try {
       const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
+      console.log("Using webhook URL:", webhookUrl);
       if (!webhookUrl) {
-        // Opcional: Manejar el caso donde la URL no esté definida
-        console.error("Webhook URL is not defined in environment variables.");
+        console.error("Webhook URL is not defined.");
         setMessage('Configuration error. Please contact support.');
         setIsSubmitting(false);
         return;
       }
-      // Usar la variable de entorno en el fetch
+
+      console.log("Attempting fetch...");
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ firstName, lastName, jobRole, email, problem, software }),
+        body: JSON.stringify(dataToSend),
       });
+      console.log("Fetch response received:", response);
+      console.log("Response status:", response.status, "OK:", response.ok);
 
       if (response.ok) {
+        console.log("Response OK");
         setIsSubmitted(true);
         setMessage([
           'Check your email in 45 seconds.',
@@ -72,11 +81,22 @@ export default function Form() {
         setProblem('');
         setSoftware('');
       } else {
-        setMessage('There was an error. Please try again.');
+        console.log("Response NOT OK");
+        // Intenta obtener un mensaje de error más detallado de n8n
+        try {
+          const errorData = await response.json();
+          console.error("n8n error data:", errorData);
+          setMessage(`Error from server: ${errorData.message || response.statusText}`);
+        } catch (jsonError) {
+          console.error("Could not parse error response as JSON:", jsonError);
+          setMessage(`Server responded with status: ${response.status} ${response.statusText}`);
+        }
       }
     } catch (error) {
-      setMessage('There was an error. Please try again.');
+      console.error("Fetch catch block error:", error);
+      setMessage('There was a network error submitting the form. Please try again.');
     } finally {
+      console.log("handleSubmit finally block");
       setIsSubmitting(false);
     }
   };
