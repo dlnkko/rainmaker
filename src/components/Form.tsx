@@ -46,28 +46,22 @@ export default function Form() {
     }
 
     try {
-      const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL;
-      console.log("Using webhook URL:", webhookUrl);
-      if (!webhookUrl) {
-        console.error("Webhook URL is not defined.");
-        setMessage('Configuration error. Please contact support.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      console.log("Attempting fetch...");
-      const response = await fetch(webhookUrl, {
+      console.log("Attempting fetch to /api/submit-form...");
+      const response = await fetch('/api/submit-form', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(dataToSend),
       });
-      console.log("Fetch response received:", response);
-      console.log("Response status:", response.status, "OK:", response.ok);
+      console.log("Fetch response from /api/submit-form received:", response);
+      
+      const result = await response.json();
+      console.log("Response status from API route:", response.status, "OK:", response.ok);
+      console.log("Result from API route:", result);
 
-      if (response.ok) {
-        console.log("Response OK");
+      if (response.ok && result.success) {
+        console.log("API Route reported SUCCESS");
         setIsSubmitted(true);
         setMessage([
           'Check your email in 45 seconds.',
@@ -81,19 +75,11 @@ export default function Form() {
         setProblem('');
         setSoftware('');
       } else {
-        console.log("Response NOT OK");
-        // Intenta obtener un mensaje de error más detallado de n8n
-        try {
-          const errorData = await response.json();
-          console.error("n8n error data:", errorData);
-          setMessage(`Error from server: ${errorData.message || response.statusText}`);
-        } catch (jsonError) {
-          console.error("Could not parse error response as JSON:", jsonError);
-          setMessage(`Server responded with status: ${response.status} ${response.statusText}`);
-        }
+        console.log("API Route reported FAILURE or non-OK status");
+        setMessage(result.message || `Request failed with status: ${response.status}`);
       }
     } catch (error) {
-      console.error("Fetch catch block error:", error);
+      console.error("Fetch catch block error (calling /api/submit-form):", error);
       setMessage('There was a network error submitting the form. Please try again.');
     } finally {
       console.log("handleSubmit finally block");
